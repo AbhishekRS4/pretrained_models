@@ -7,22 +7,22 @@ import tensorflow as tf
 
 '''
 
-ResNet-50
+ResNet-152
 
 # Reference
 - [Deep Residual Learning for Image Recognition](
    https://arxiv.org/abs/1512.03385)
 
 # Pretrained model weights
-- [Download pretrained resnet-50 model]
-  (https://github.com/fchollet/deep-learning-models/releases/)
+- [Download pretrained resnet-152 model]
+  (https://drive.google.com/file/d/0Byy2AcGyEVxfeXExMzNNOHpEODg/view)
 
 '''
 
-class ResNet50:
+class ResNet152:
 
     # initialize network parameters
-    def __init__(self, data_format = 'channels_first', resnet_path = 'resnet50_weights_tf_dim_ordering_tf_kernels_notop.h5'):
+    def __init__(self, data_format = 'channels_first', resnet_path = 'resnet152_weights_tf.h5'):
         self._weights_h5 = h5py.File(resnet_path, 'r')
         self._data_format = data_format
         self._encoder_data_format = None
@@ -39,8 +39,8 @@ class ResNet50:
             self._pool_kernel = [1, 3, 3, 1]
             self._pool_strides = [1, 2, 2, 1]
 
-    # build resnet-50 encoder
-    def resnet50_encoder(self, features):
+    # build resnet-152 encoder
+    def resnet152_encoder(self, features):
 
         # input : BGR format with image_net mean subtracted
         # bgr mean : [103.939, 116.779, 123.68]
@@ -60,17 +60,13 @@ class ResNet50:
 
         # Stage 3
         self.stage3 = self._res_conv_block(input_layer = self.stage2, stage = '3a', strides = self._pool_strides)
-        self.stage3 = self._res_identity_block(input_layer = self.stage3, stage = '3b')
-        self.stage3 = self._res_identity_block(input_layer = self.stage3, stage = '3c')
-        self.stage3 = self._res_identity_block(input_layer = self.stage3, stage = '3d')
+        for i in range(1, 8):
+            self.stage3 = self._res_identity_block(input_layer = self.stage3, stage = '3b' + str(i))
 
         # Stage 4
         self.stage4 = self._res_conv_block(input_layer = self.stage3, stage = '4a', strides = self._pool_strides)
-        self.stage4 = self._res_identity_block(input_layer = self.stage4, stage = '4b')
-        self.stage4 = self._res_identity_block(input_layer = self.stage4, stage = '4c')
-        self.stage4 = self._res_identity_block(input_layer = self.stage4, stage = '4d')
-        self.stage4 = self._res_identity_block(input_layer = self.stage4, stage = '4e')
-        self.stage4 = self._res_identity_block(input_layer = self.stage4, stage = '4f')
+        for i in range(1, 36):
+            self.stage4 = self._res_identity_block(input_layer = self.stage4, stage = '4b' + str(i))
 
         # Stage 5
         self.stage5 = self._res_conv_block(input_layer = self.stage4, stage = '5a', strides = self._pool_strides)
@@ -85,10 +81,7 @@ class ResNet50:
     #-----------------------#
     def _conv_layer(self, input_layer, name, strides = [1, 1, 1, 1], padding = 'SAME'):
         W = tf.constant(self._weights_h5[name][name + '_W_1:0'])
-        b = self._weights_h5[name][name + '_b_1:0']
-        b = tf.constant(np.reshape(b, (b.shape[0])))
         x = tf.nn.conv2d(input_layer, filter = W, strides = strides, padding = padding, data_format = self._encoder_data_format, name = name + 'conv')
-        x = tf.nn.bias_add(x, b, data_format = self._encoder_data_format, name = name + 'bias')
 
         return x
 
