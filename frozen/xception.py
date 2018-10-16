@@ -31,16 +31,13 @@ class Xception:
         self._padding = 'SAME'
         self._conv_strides = [1, 1, 1, 1]
         self._reduction_rate = 0.5
-        self._feature_map_axis = None
 
         if self._data_format == 'channels_first':
             self._encoder_data_format = 'NCHW'
-            self._feature_map_axis = 1
             self._pool_kernel = [1, 1, 3, 3]
             self._pool_strides = [1, 1, 2, 2]
         else: 
             self._encoder_data_format = 'NHWC'
-            self._feature_map_axis = -1
             self._pool_kernel = [1, 3, 3, 1]
             self._pool_strides = [1, 2, 2, 1]
 
@@ -122,8 +119,10 @@ class Xception:
 
             self.temp_layer = tf.add(self.temp_residual_layer, self.temp_layer, name = prefix + 'add')
 
+        self.stage12 = self.temp_layer
+
         # Stage 6
-        self.stage13_residual = self._conv_layer(self.temp_layer, name = 'block13_conv1', weights_key = 'convolution2d_6', strides = self._pool_strides)
+        self.stage13_residual = self._conv_layer(self.stage12, name = 'block13_conv1', weights_key = 'convolution2d_6', strides = self._pool_strides)
         self.stage13_residual = self._batchnorm_layer(self.stage13_residual, name = 'block13_conv1_bn',  weights_key = 'batchnormalization_36')
 
         self.stage13 = self._separable_conv_layer(self.temp_layer, name = 'block13_sepconv1', weights_key = 'separableconvolution2d_31')
