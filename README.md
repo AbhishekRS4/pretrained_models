@@ -24,3 +24,9 @@
 * For convolution layers, pretrained weights are loaded
 * For batchnorm layers, the parameters are reinitialized by tf
 * And both layers are trainable
+
+## Reference
+* [VGG](https://arxiv.org/abs/1409.1556)
+* [ResNet](https://arxiv.org/abs/1512.03385)
+* [DenseNet](https://arxiv.org/abs/1608.06993)
+* [Xception](https://arxiv.org/abs/1610.02357)
