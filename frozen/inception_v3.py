@@ -55,12 +55,12 @@ class InceptionV3:
         self.stage1 = self._conv_block(features, strides = self._pool_strides, name = 'block1_conv1')
         self.stage1 = self._conv_block(self.stage1, name = 'block1_conv2')
         self.stage1 = self._conv_block(self.stage1, name = 'block1_conv3')
-        self.pool1 = self._max_pool_layer(self.stage1, name = 'block1_maxpool')
+        self.pool1 = self._maxpool_layer(self.stage1, name = 'block1_maxpool')
 
         # Stage 2
         self.stage2 = self._conv_block(self.pool1, name = 'block2_conv1')
         self.stage2 = self._conv_block(self.stage2, name = 'block2_conv2')
-        self.pool2 = self._max_pool_layer(self.stage2, name = 'block2_maxpool')
+        self.pool2 = self._maxpool_layer(self.stage2, name = 'block2_maxpool')
 
         # Stage 3
         self.stage3 = self._inception_block_a(self.pool2, 'block_a_mixed1_')
@@ -110,7 +110,7 @@ class InceptionV3:
         branch3x3dbl = self._conv_block(branch3x3dbl, name = name + 'branch3x3_3')
         branch3x3dbl = self._conv_block(branch3x3dbl, strides = self._pool_strides, name = name + 'branch3x3_4')
 
-        branch_pool = self._max_pool_layer(input_layer, name = name + 'maxpool')
+        branch_pool = self._maxpool_layer(input_layer, name = name + 'maxpool')
 
         out = tf.concat([branch3x3, branch3x3dbl, branch_pool], axis = self._feature_map_axis, name = name + 'concat')
 
@@ -145,7 +145,7 @@ class InceptionV3:
         branch7x7 = self._conv_block(branch7x7, name = name + 'branch7x7_3')
         branch7x7 = self._conv_block(branch7x7, strides = self._pool_strides, name = name + 'branch7x7_4')
 
-        branch_pool = self._max_pool_layer(input_layer, name = name + 'maxpool')
+        branch_pool = self._maxpool_layer(input_layer, name = name + 'maxpool')
 
         out = tf.concat([branch3x3, branch7x7, branch_pool], axis = self._feature_map_axis, name = name + 'concat')
 
@@ -206,7 +206,7 @@ class InceptionV3:
     #-----------------------#
     # maxpool2d layer       #
     #-----------------------#
-    def _max_pool_layer(self, input_layer, name):
+    def _maxpool_layer(self, input_layer, name):
         pool = tf.nn.max_pool(input_layer, ksize = self._pool_kernel, strides = self._pool_strides, padding = self._padding, data_format = self._encoder_data_format, name = name)
 
         return pool
