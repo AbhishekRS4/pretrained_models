@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 
 '''
-#Parse functions for tf dataset api
+# Parse functions for tf dataset api
 
 * Use parse_fn_res34 for resnet-34
 * Use parse_fn_caffe for vgg, resnets except for resnet-34
