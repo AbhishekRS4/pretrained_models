@@ -147,7 +147,7 @@ class InceptionV4:
 
         return x
 
-    def _inception_block_c(self, x, scale, activation = True, name):
+    def _inception_block_c(self, x, scale, name, activation = True):
         branch0 = self._conv_block(x, name = name + 'Branch_0_Conv2d_1x1')
 
         branch1 = self._conv_block(x, name = name + 'Branch_1_Conv2d_0a_1x1')
