@@ -48,6 +48,7 @@ class ResNet101:
         # Stage 0
         self.stage0 = self._conv_layer(features, 'conv1', strides = self._pool_strides)
         self.stage0 = self._batchnorm_layer(self.stage0, 'bn_conv1')
+        self.stage0 = self._scale(self.stage0, name = 'scale_conv1')
         self.stage0 = tf.nn.relu(self.stage0, name = 'relu_conv1')
         
         # Stage 1
@@ -105,23 +106,44 @@ class ResNet101:
 
         return bn
 
+    #-----------------#
+    # scale layer     #
+    #-----------------#
+    def _scale(self, input_layer, name):
+        beta = tf.constant(self._weights_h5[name][name + '_beta_1:0'])
+        gamma = tf.constant(self._weights_h5[name][name + '_gamma_1:0'])
+
+        if self._encoder_data_format == 'NCHW':
+            input_layer = tf.transpose(input_layer, perm = [0, 2, 3, 1])
+
+        out = gamma * input_layer + beta
+
+        if self._encoder_data_format == 'NCHW':
+            out = tf.transpose(out, perm = [0, 3, 1, 2])
+
+        return out
+
     #-----------------------#
     # convolution block     #
     #-----------------------#
     def _res_conv_block(self, input_layer, stage, strides):
         x = self._conv_layer(input_layer, name = 'res' + stage + '_branch2a', strides = strides)
         x = self._batchnorm_layer(x, name = 'bn' + stage + '_branch2a')
+        x = self._scale(x, name = 'scale' + stage + '_branch2a')
         x = tf.nn.relu(x, name = 'relu' + stage + '_branch2a')
 
         x = self._conv_layer(x, name = 'res' + stage + '_branch2b')
         x = self._batchnorm_layer(x, name = 'bn' + stage + '_branch2b')
+        x = self._scale(x, name = 'scale' + stage + '_branch2b')
         x = tf.nn.relu(x, name = 'relu' + stage + '_branch2b')
 
         x = self._conv_layer(x, name = 'res' + stage + '_branch2c')
         x = self._batchnorm_layer(x, name = 'bn' + stage + '_branch2c')
+        x = self._scale(x, name = 'scale' + stage + '_branch2c')
 
         shortcut = self._conv_layer(input_layer, name = 'res' + stage + '_branch1', strides = strides)
         shortcut = self._batchnorm_layer(shortcut, name = 'bn' + stage + '_branch1')
+        shortcut = self._scale(shortcut, name = 'scale' + stage + '_branch1')
 
         x = tf.add(x, shortcut, name = 'add' + stage)
         x = tf.nn.relu(x, name = 'relu' + stage)
@@ -134,14 +156,17 @@ class ResNet101:
     def _res_identity_block(self, input_layer, stage):
         x = self._conv_layer(input_layer, name = 'res' + stage + '_branch2a')
         x = self._batchnorm_layer(x, name = 'bn' + stage + '_branch2a')
+        x = self._scale(x, name = 'scale' + stage + '_branch2a')
         x = tf.nn.relu(x, name = 'relu' + stage + '_branch2a')
 
         x = self._conv_layer(x, name = 'res' + stage + '_branch2b')
         x = self._batchnorm_layer(x, name = 'bn' + stage + '_branch2b')
+        x = self._scale(x, name = 'scale' + stage + '_branch2b')
         x = tf.nn.relu(x, name = 'relu' + stage + '_branch2b')
 
         x = self._conv_layer(x, name = 'res' + stage + '_branch2c')
         x = self._batchnorm_layer(x, name = 'bn' + stage + '_branch2c')
+        x = self._scale(x, name = 'scale' + stage + '_branch2c')
 
         x = tf.add(x, input_layer, name = 'add' + stage)
         x = tf.nn.relu(x, name = 'relu' + stage)
